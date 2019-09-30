@@ -27,7 +27,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-import models
+from models import *
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -186,6 +186,10 @@ def show_venue(venue_id):
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
   form = VenueForm()
+  choices = Choice.query.order_by('id').all()
+  genres = Genre.query.order_by('id').all()
+  form.state.choices = [(ch.id, ch.name) for ch in choices]
+  form.genres.choices = [(gn.id, gn.name) for gn in genres]
   return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/create', methods=['POST'])
