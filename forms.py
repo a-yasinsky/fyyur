@@ -1,7 +1,16 @@
 from datetime import datetime
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
+from wtforms import StringField, SelectField, SelectMultipleField, \
+    DateTimeField, BooleanField, TextAreaField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from wtforms.validators import DataRequired, AnyOf, URL
+from models import Choice, Genre
+
+def states_choices():
+    return Choice.query.order_by('id').all()
+
+def genres_choices():
+    return Genre.query.order_by('id').all()
 
 class ShowForm(Form):
     artist_id = StringField(
@@ -23,8 +32,9 @@ class VenueForm(Form):
     city = StringField(
         'city', validators=[DataRequired()]
     )
-    state = SelectField(
-        'state', validators=[DataRequired()]
+    state = QuerySelectField(
+        # TODO emplemetn data required
+        'state', query_factory=states_choices, get_label='name'
     )
     address = StringField(
         'address', validators=[DataRequired()]
@@ -35,12 +45,21 @@ class VenueForm(Form):
     image_link = StringField(
         'image_link'
     )
-    genres = SelectMultipleField(
-        # TODO implement enum restriction
-        'genres', validators=[DataRequired()]
+    genres = QuerySelectMultipleField(
+        # TODO implement enum restriction data required
+        'genres', query_factory=genres_choices, get_label='name'
     )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
+    )
+    website = StringField(
+        'website', validators=[URL()]
+    )
+    seeking_talent = BooleanField(
+        'seeking_talnet'
+    )
+    seeking_description = TextAreaField(
+        'seeking_description'
     )
 
 class ArtistForm(Form):

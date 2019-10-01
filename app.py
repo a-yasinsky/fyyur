@@ -186,23 +186,30 @@ def show_venue(venue_id):
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
   form = VenueForm()
-  choices = Choice.query.order_by('id').all()
-  genres = Genre.query.order_by('id').all()
-  form.state.choices = [(ch.id, ch.name) for ch in choices]
-  form.genres.choices = [(gn.id, gn.name) for gn in genres]
+  #choices = Choice.query.order_by('id').all()
+  #genres = Genre.query.order_by('id').all()
+  #form.state.choices = [(ch.id, ch.name) for ch in choices]
+  #form.genres.choices = [(gn.id, gn.name) for gn in genres]
   return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
+  form = VenueForm()
+  #choices = Choice.query.order_by('id').all()
+  #genres = Genre.query.order_by('id').all()
+  #form.state.choices = [(ch.id, ch.name) for ch in choices]
+  #form.genres.choices = [(gn.id, gn.name) for gn in genres]
+  if form.validate_on_submit():
+      # on successful db insert, flash success
+      flash('Venue ' + request.form['name'] + ' was successfully listed!')
+  else:
+      flash('caramba!')
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
