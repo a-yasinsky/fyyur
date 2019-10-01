@@ -1,35 +1,40 @@
 {% extends 'layouts/main.html' %}
 {% block title %}New Venue{% endblock %}
 {% block content %}
-
-{% for field in form.errors %}
-{% for error in form.errors[field] %}
-  <div class="alert alert-error">
-      <strong>Error!</strong> {{error}}
-  </div>
-{% endfor %}
-{% endfor %}
   <div class="form-wrapper">
     <form method="post" class="form">
+      {{ form.csrf_token }}
       <h3 class="form-heading">List a new venue <a href="{{ url_for('index') }}" title="Back to homepage"><i class="fa fa-home pull-right"></i></a></h3>
-      <div class="form-group">
+      <div class="form-group {% if 'name' in form.errors %} has-error {% endif %}">
         <label for="name">Name</label>
         {{ form.name(class_ = 'form-control', autofocus = true) }}
+        {% for error in form.errors['name'] %}
+          <span class="help-block">Error! {{error}}</span>
+        {% endfor %}
       </div>
       <div class="form-group">
           <label>City & State</label>
           <div class="form-inline">
-            <div class="form-group">
+            <div class="form-group {% if 'city' in form.errors %} has-error {% endif %}">
               {{ form.city(class_ = 'form-control', placeholder='City', autofocus = true) }}
+              {% for error in form.errors['city'] %}
+                <span class="help-block">Error! {{error}}</span>
+              {% endfor %}
             </div>
-            <div class="form-group">
+            <div class="form-group {% if 'state' in form.errors %} has-error {% endif %}">
               {{ form.state(class_ = 'form-control', placeholder='State', autofocus = true) }}
+              {% for error in form.errors['state'] %}
+                <span class="help-block">Error! {{error}}</span>
+              {% endfor %}
             </div>
           </div>
       </div>
-      <div class="form-group">
+      <div class="form-group {% if 'address' in form.errors %} has-error {% endif %}">
         <label for="address">Address</label>
         {{ form.address(class_ = 'form-control', autofocus = true) }}
+        {% for error in form.errors['address'] %}
+          <span class="help-block">Error! {{error}}</span>
+        {% endfor %}
       </div>
       <div class="form-group">
           <label for="phone">Phone</label>
@@ -40,13 +45,19 @@
         <small>Ctrl+Click to select multiple</small>
         {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', autofocus = true) }}
       </div>
-      <div class="form-group">
+      <div class="form-group {% if 'facebook_link' in form.errors %} has-error {% endif %}">
         <label for="facebook_link">Facebook Link</label>
         {{ form.facebook_link(class_ = 'form-control', placeholder='http://', autofocus = true) }}
+        {% for error in form.errors['facebook_link'] %}
+          <span class="help-block">Error! {{error}}</span>
+        {% endfor %}
       </div>
-      <div class="form-group">
+      <div class="form-group {% if 'website' in form.errors %} has-error {% endif %}">
         <label for="website">Website Link</label>
         {{ form.website(class_ = 'form-control', placeholder='http://', autofocus = true) }}
+        {% for error in form.errors['website'] %}
+          <span class="help-block">Error! {{error}}</span>
+        {% endfor %}
       </div>
       <div class="form-group">
           <label>Seeking Talent</label>

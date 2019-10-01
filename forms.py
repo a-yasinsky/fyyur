@@ -3,7 +3,7 @@ from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, \
     DateTimeField, BooleanField, TextAreaField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms.validators import DataRequired, AnyOf, URL, Optional
 from models import Choice, Genre
 
 def states_choices():
@@ -34,7 +34,7 @@ class VenueForm(Form):
     )
     state = QuerySelectField(
         # TODO emplemetn data required
-        'state', query_factory=states_choices, get_label='name'
+        'state', validators=[DataRequired()], query_factory=states_choices, get_label='name'
     )
     address = StringField(
         'address', validators=[DataRequired()]
@@ -47,13 +47,13 @@ class VenueForm(Form):
     )
     genres = QuerySelectMultipleField(
         # TODO implement enum restriction data required
-        'genres', query_factory=genres_choices, get_label='name'
+        'genres', validators=[DataRequired()], query_factory=genres_choices, get_label='name'
     )
     facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[Optional(), URL()]
     )
     website = StringField(
-        'website', validators=[URL()]
+        'website', validators=[Optional(), URL()]
     )
     seeking_talent = BooleanField(
         'seeking_talnet'
