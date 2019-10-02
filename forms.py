@@ -43,7 +43,7 @@ class VenueForm(Form):
         'phone'
     )
     image_link = StringField(
-        'image_link'
+        'image_link', validators=[Optional(), URL()]
     )
     genres = QuerySelectMultipleField(
         # TODO implement enum restriction data required
