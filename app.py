@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
-
+import sys
 import json
 import dateutil.parser
 import babel
@@ -11,7 +11,6 @@ from flask_sqlalchemy import SQLAlchemy
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
-from forms import *
 from flask_migrate import Migrate
 #----------------------------------------------------------------------------#
 # App Config.
@@ -27,6 +26,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
+from forms import *
 from models import *
 #----------------------------------------------------------------------------#
 # Filters.
@@ -177,7 +177,8 @@ def show_venue(venue_id):
     "past_shows_count": 1,
     "upcoming_shows_count": 1,
   }
-  data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
+  #data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
+  data = Venue.query.get_or_404(venue_id)
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
@@ -195,8 +196,21 @@ def create_venue_submission():
   form = VenueForm()
   if form.validate_on_submit():
       # on successful db insert, flash success
-      flash('Venue ' + request.form['name'] + ' was successfully listed!')
-      #return render_template('pages/home.html')
+      try:
+          venue = Venue()
+          form.populate_obj(venue)
+          venue.state_id = request.form['state']
+          db.session.add(venue)
+          db.session.commit()
+          flash('Venue ' + request.form['name'] + ' was successfully listed!')
+      except:
+          db.session.rollback()
+          print(sys.exc_info())
+          flash('Unable to write data!')
+          return render_template('forms/new_venue.html', form=form)
+      finally:
+          db.session.close()
+
       return redirect(url_for('venues'))
   else:
       flash('Check your data!')

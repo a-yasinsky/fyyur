@@ -34,7 +34,8 @@ class VenueForm(Form):
     )
     state = QuerySelectField(
         # TODO emplemetn data required
-        'state', validators=[DataRequired()], query_factory=states_choices, get_label='name'
+        'state', validators=[DataRequired()],
+        query_factory=states_choices, get_label='name'
     )
     address = StringField(
         'address', validators=[DataRequired()]
