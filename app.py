@@ -58,7 +58,7 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
+  dataOld=[{
     "city": "San Francisco",
     "state": "CA",
     "venues": [{
@@ -79,6 +79,18 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
+  city_venues = {}
+  city_state = {}
+  venues = Venue.query.order_by('city').all()
+  for ven in venues:
+      if ven.city not in city_venues:
+         city_venues[ven.city] = []
+         city_state[ven.city] = ven.state_id
+      city_venues[ven.city].append({'id': ven.id,
+            'name':ven.name, 'num_upcoming_shows':0})
+  data =[]
+  for city in city_venues:
+      data.append({'city': city, 'state': city_state[city], 'venues':city_venues[city]})
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -199,7 +211,7 @@ def create_venue_submission():
       try:
           venue = Venue()
           form.populate_obj(venue)
-          venue.state_id = request.form['state']
+          #venue.state_id = request.form['state']
           db.session.add(venue)
           db.session.commit()
           flash('Venue ' + request.form['name'] + ' was successfully listed!')

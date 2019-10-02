@@ -12,6 +12,7 @@ class Venue(db.Model):
     name = db.Column(db.String)
     city = db.Column(db.String(120))
     state_id = db.Column(db.String(2), db.ForeignKey('choices.id'), nullable=False)
+    state = db.relationship('Choice')
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
