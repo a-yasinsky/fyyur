@@ -245,16 +245,7 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
+  data = Artist.query.order_by('name').all()
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
@@ -347,7 +338,8 @@ def show_artist(artist_id):
     "past_shows_count": 0,
     "upcoming_shows_count": 3,
   }
-  data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+  #data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+  data = Artist.query.get_or_404(artist_id)
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
@@ -410,10 +402,6 @@ def edit_venue_submission(venue_id):
 @app.route('/artists/create', methods=['GET'])
 def create_artist_form():
   form = ArtistForm()
-  choices = Choice.query.order_by('id').all()
-  genres = Genre.query.order_by('id').all()
-  form.state.choices = [(ch.id, ch.name) for ch in choices]
-  form.genres.choices = [(gn.id, gn.name) for gn in genres]
   return render_template('forms/new_artist.html', form=form)
 
 @app.route('/artists/create', methods=['POST'])
@@ -421,12 +409,29 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  form = ArtistForm()
+  if form.validate_on_submit():
+      try:
+          artist = Artist()
+          form.populate_obj(artist)
+          db.session.add(artist)
+          db.session.commit()
+          flash('Artist ' + request.form['name'] + ' was successfully listed!')
+      except:
+          db.session.rollback()
+          print(sys.exc_info())
+          flash('Unable to write data!')
+          return render_template('forms/new_artist.html', form=form)
+      finally:
+          db.session.close()
 
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
+      return redirect(url_for('artists'))
+  else:
+      flash('Check your data!')
+
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
+  return render_template('forms/new_artist.html', form=form)
 
 
 #  Shows

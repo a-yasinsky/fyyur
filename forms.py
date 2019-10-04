@@ -70,23 +70,32 @@ class ArtistForm(Form):
     city = StringField(
         'city', validators=[DataRequired()]
     )
-    state = SelectField(
-        'state', validators=[DataRequired()]
+    state = QuerySelectField(
+        'state', validators=[DataRequired()],
+        query_factory=states_choices, get_label='name'
     )
     phone = StringField(
         # TODO implement validation logic for state
         'phone'
     )
     image_link = StringField(
-        'image_link'
+        'image_link', validators=[Optional(), URL()]
     )
-    genres = SelectMultipleField(
-        # TODO implement enum restriction
-        'genres', validators=[DataRequired()]
+    genres = QuerySelectMultipleField(
+        # TODO implement enum restriction data required
+        'genres', validators=[DataRequired()], query_factory=genres_choices, get_label='name'
     )
     facebook_link = StringField(
-        # TODO implement enum restriction
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[Optional(), URL()]
+    )
+    website = StringField(
+        'website', validators=[Optional(), URL()]
+    )
+    seeking_venue = BooleanField(
+        'seeking_talnet'
+    )
+    seeking_description = TextAreaField(
+        'seeking_description'
     )
 
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
