@@ -33,7 +33,8 @@ from models import *
 #----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
-  date = dateutil.parser.parse(value)
+  #date = dateutil.parser.parse(value)
+  date = value
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
@@ -478,6 +479,7 @@ def shows():
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-15T20:00:00.000Z"
   }]
+  data = Show.query.order_by('show_date').all()
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
@@ -490,13 +492,31 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
+  form = ShowForm()
+  if form.validate_on_submit():
+      try:
+          show = Show()
+          form.populate_obj(show)
+          db.session.add(show)
+          db.session.commit()
+          flash('Show was successfully listed!')
+      except:
+          db.session.rollback()
+          print(sys.exc_info())
+          flash('Unable to write data!')
+          return render_template('forms/new_show.html', form=form)
+      finally:
+          db.session.close()
 
+      return redirect(url_for('shows'))
+  else:
+      flash('Check your data!')
   # on successful db insert, flash success
-  flash('Show was successfully listed!')
+
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Show could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  return render_template('forms/new_show.html', form=form)
 
 @app.errorhandler(404)
 def not_found_error(error):

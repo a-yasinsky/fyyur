@@ -4,23 +4,22 @@ from wtforms import StringField, SelectField, SelectMultipleField, \
     DateTimeField, BooleanField, TextAreaField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from wtforms.validators import DataRequired, AnyOf, URL, Optional
-from models import Choice, Genre
+import models
 
-def states_choices():
-    return Choice.query.order_by('id').all()
-
-def genres_choices():
-    return Genre.query.order_by('id').all()
+def get_model_choices(model_name):
+    return getattr(models, model_name).query.order_by('name').all()
 
 class ShowForm(Form):
-    artist_id = StringField(
-        'artist_id'
+    artist = QuerySelectField(
+        'artist', validators=[DataRequired()],
+        query_factory=lambda: get_model_choices('Artist'), get_label='name'
     )
-    venue_id = StringField(
-        'venue_id'
+    venue = QuerySelectField(
+        'venue', validators=[DataRequired()],
+        query_factory=lambda: get_model_choices('Venue'), get_label='name'
     )
-    start_time = DateTimeField(
-        'start_time',
+    show_date = DateTimeField(
+        'show_date',
         validators=[DataRequired()],
         default= datetime.today()
     )
@@ -35,7 +34,7 @@ class VenueForm(Form):
     state = QuerySelectField(
         # TODO emplemetn data required
         'state', validators=[DataRequired()],
-        query_factory=states_choices, get_label='name'
+        query_factory=lambda: get_model_choices('Choice'), get_label='name'
     )
     address = StringField(
         'address', validators=[DataRequired()]
@@ -48,7 +47,7 @@ class VenueForm(Form):
     )
     genres = QuerySelectMultipleField(
         # TODO implement enum restriction data required
-        'genres', validators=[DataRequired()], query_factory=genres_choices, get_label='name'
+        'genres', validators=[DataRequired()], query_factory=lambda: get_model_choices('Genre'), get_label='name'
     )
     facebook_link = StringField(
         'facebook_link', validators=[Optional(), URL()]
@@ -72,7 +71,7 @@ class ArtistForm(Form):
     )
     state = QuerySelectField(
         'state', validators=[DataRequired()],
-        query_factory=states_choices, get_label='name'
+        query_factory=lambda: get_model_choices('Choice'), get_label='name'
     )
     phone = StringField(
         # TODO implement validation logic for state
@@ -83,7 +82,7 @@ class ArtistForm(Form):
     )
     genres = QuerySelectMultipleField(
         # TODO implement enum restriction data required
-        'genres', validators=[DataRequired()], query_factory=genres_choices, get_label='name'
+        'genres', validators=[DataRequired()], query_factory=lambda: get_model_choices('Genre'), get_label='name'
     )
     facebook_link = StringField(
         'facebook_link', validators=[Optional(), URL()]
