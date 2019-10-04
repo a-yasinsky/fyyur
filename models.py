@@ -47,6 +47,15 @@ class Artist(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+class Show(db.Model):
+    __tablename__ = "shows"
+
+    id = db.Column(db.Integer, primary_key=True)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable=False)
+    artist = db.relationship('Artist', backref=db.backref('shows', lazy=True))
+    venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), nullable=False)
+    venue = db.relationship('Venue', backref=db.backref('shows', lazy=True))
+    show_date = db.Column(db.DateTime)
 
 class Choice(db.Model):
     __tablename__ = 'choices'
