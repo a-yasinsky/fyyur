@@ -12,6 +12,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from flask_migrate import Migrate
+from datetime import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -82,13 +83,28 @@ def venues():
   }]
   city_venues = {}
   city_state = {}
-  venues = Venue.query.order_by('city').all()
+  upcoming_shows = Show.query.with_entities(
+    Show.venue_id.label('venue_id'),
+    db.func.count(Show.id).label('num_upcoming_shows')) \
+    .filter(Show.show_date >= datetime.today()) \
+    .group_by(Show.venue_id).subquery()
+
+  null_expr = db.case([(upcoming_shows.c.num_upcoming_shows == None, 0)], else_ = upcoming_shows.c.num_upcoming_shows)
+
+  venues = Venue.query.with_entities(
+    Venue.id, Venue.name,
+    Venue.city, Venue.state_id,
+    null_expr.label('num_upcoming_shows')
+  ).outerjoin(
+    upcoming_shows, Venue.id == upcoming_shows.c.venue_id
+  ).order_by('city')
+ 
   for ven in venues:
       if ven.city not in city_venues:
          city_venues[ven.city] = []
          city_state[ven.city] = ven.state_id
       city_venues[ven.city].append({'id': ven.id,
-            'name':ven.name, 'num_upcoming_shows':0})
+            'name':ven.name, 'num_upcoming_shows':ven.num_upcoming_shows})
   data =[]
   for city in city_venues:
       data.append({'city': city, 'state': city_state[city], 'venues':city_venues[city]})
