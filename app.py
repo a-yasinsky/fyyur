@@ -48,12 +48,12 @@ app.jinja_env.filters['datetime'] = format_datetime
 # Subquery.
 #----------------------------------------------------------------------------#
 
-def get_upcoming_shows_subquery():
+def get_upcoming_shows_subquery(field):
     upcoming_shows = Show.query.with_entities(
-      Show.venue_id.label('venue_id'),
+      getattr(Show, field).label(field),
       db.func.count(Show.id).label('num_upcoming_shows')) \
       .filter(Show.show_date >= datetime.today()) \
-      .group_by(Show.venue_id).subquery()
+      .group_by(getattr(Show, field)).subquery()
 
     null_expr = db.case(
         [(upcoming_shows.c.num_upcoming_shows == None, 0)],
@@ -80,7 +80,7 @@ def venues():
   city_venues = {}
   city_state = {}
 
-  upcoming_shows, null_expr = get_upcoming_shows_subquery()
+  upcoming_shows, null_expr = get_upcoming_shows_subquery('venue_id')
 
   venues = Venue.query.with_entities(
     Venue.id, Venue.name,
@@ -107,7 +107,7 @@ def search_venues():
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
 
-  upcoming_shows, null_expr = get_upcoming_shows_subquery()
+  upcoming_shows, null_expr = get_upcoming_shows_subquery('venue_id')
 
   venues = Venue.query.with_entities(
     Venue.id, Venue.name,
@@ -235,14 +235,18 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
-  }
+  
+  upcoming_shows, null_expr = get_upcoming_shows_subquery('artist_id')
+
+  artists = Artist.query.with_entities(
+    Artist.id, Artist.name,
+    null_expr.label('num_upcoming_shows')
+  ).outerjoin(
+    upcoming_shows, Artist.id == upcoming_shows.c.artist_id
+  ).filter(Artist.name.ilike('%' + request.form.get('search_term', '') + '%'))
+
+  response = {'count': artists.count(), 'data': artists}
+
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
