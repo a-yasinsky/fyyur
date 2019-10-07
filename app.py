@@ -120,14 +120,14 @@ def search_venues():
 
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
-@app.route('/venues/<int:venue_id>')
+@app.route('/venues/<int:venue_id>', methods=['GET'])
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
   data = Venue.query.options(
     db.joinedload(Venue.shows).
     subqueryload(Show.artist)).get_or_404(venue_id)
-    
+
   data.past_shows = []
   data.upcoming_shows = []
   past_shows_count, upcoming_shows_count = 0, 0
@@ -165,22 +165,31 @@ def create_venue_submission():
   form = VenueForm()
   if form.validate_on_submit():
       # on successful db insert, flash success
+      error = False
+      data = {}
       try:
           venue = Venue()
           form.populate_obj(venue)
-          #venue.state_id = request.form['state']
+          #raise Exception('cheking the error hadling')
           db.session.add(venue)
           db.session.commit()
-          flash('Venue ' + request.form['name'] + ' was successfully listed!')
+          data['name'] = venue.name
       except:
+          error = True
           db.session.rollback()
           print(sys.exc_info())
           flash('Unable to write data!')
+          # is it normal not to close session here?
+          # return after session.close() leades to "Instance is not bound to a Session;"
+          # in QuerySelectField lazy load.
+          # http://sqlalche.me/e/bhk3
           return render_template('forms/new_venue.html', form=form)
       finally:
           db.session.close()
 
-      return redirect(url_for('venues'))
+      if not error:
+          flash('Venue ' + data['name'] + ' was successfully listed!')
+          return redirect(url_for('venues'))
   else:
       flash('Check your data!')
   # TODO: on unsuccessful db insert, flash an error instead.
@@ -188,14 +197,30 @@ def create_venue_submission():
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('forms/new_venue.html', form=form)
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<venue_id>', methods=['POST', 'DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
+  venue = Venue.query.get_or_404(venue_id)
+  if len(venue.shows):
+      flash('Unable to remove the venue on which shows are held!')
+      return redirect(url_for('show_venue', venue_id = venue_id))
+  data = {}
+  data['name'] = venue.name
+  try:
+    venue.genres = []
+    db.session.delete(venue)
+    db.session.commit()
+    flash('Venue ' + data['name'] + ' has been deleted.')
+  except:
+    db.session.rollback()
+    print(sys.exc_info())
+    flash('Venue ' + data['name'] + ' could not be deleted.')
+  finally:
+    db.session.close()
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  return redirect(url_for('index'))
 
 #  Artists
 #  ----------------------------------------------------------------

@@ -47,7 +47,8 @@ class VenueForm(Form):
     )
     genres = QuerySelectMultipleField(
         # TODO implement enum restriction data required
-        'genres', validators=[DataRequired()], query_factory=lambda: get_model_choices('Genre'), get_label='name'
+        'genres', validators=[DataRequired()],
+        query_factory=lambda: get_model_choices('Genre'), get_label='name'
     )
     facebook_link = StringField(
         'facebook_link', validators=[Optional(), URL()]
@@ -82,7 +83,8 @@ class ArtistForm(Form):
     )
     genres = QuerySelectMultipleField(
         # TODO implement enum restriction data required
-        'genres', validators=[DataRequired()], query_factory=lambda: get_model_choices('Genre'), get_label='name'
+        'genres', validators=[DataRequired()],
+        query_factory=lambda: get_model_choices('Genre'), get_label='name'
     )
     facebook_link = StringField(
         'facebook_link', validators=[Optional(), URL()]
