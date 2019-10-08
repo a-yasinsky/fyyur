@@ -32,7 +32,7 @@ class VenueForm(Form):
         'city', validators=[DataRequired()]
     )
     state = QuerySelectField(
-        # TODO emplemetn data required
+        # TODO emplement data required
         'state', validators=[DataRequired()],
         query_factory=lambda: get_model_choices('Choice'), get_label='name'
     )
@@ -75,7 +75,6 @@ class ArtistForm(Form):
         query_factory=lambda: get_model_choices('Choice'), get_label='name'
     )
     phone = StringField(
-        # TODO implement validation logic for state
         'phone'
     )
     image_link = StringField(
