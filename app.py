@@ -111,10 +111,16 @@ def search_venues():
 
   venues = Venue.query.with_entities(
     Venue.id, Venue.name,
-    null_expr.label('num_upcoming_shows')
+    null_expr.label('num_upcoming_shows'),
+    db.func.concat(Venue.name, ' ', Venue.city, ', ', Venue.state_id)
   ).outerjoin(
     upcoming_shows, Venue.id == upcoming_shows.c.venue_id
-  ).filter(Venue.name.ilike('%' + request.form.get('search_term', '') + '%'))
+  ).filter(
+    db.func.concat(Venue.name, ' ', Venue.city, ', ', Venue.state_id).ilike(
+      '%' + request.form.get('search_term', '') + '%'
+    )
+  )
+  #).filter(Venue.name.ilike('%' + request.form.get('search_term', '') + '%'))
 
   response = {'count': venues.count(), 'data': venues}
 
@@ -240,10 +246,16 @@ def search_artists():
 
   artists = Artist.query.with_entities(
     Artist.id, Artist.name,
-    null_expr.label('num_upcoming_shows')
+    null_expr.label('num_upcoming_shows'),
+    db.func.concat(Artist.name, ' ', Artist.city, ', ', Artist.state_id)
   ).outerjoin(
     upcoming_shows, Artist.id == upcoming_shows.c.artist_id
-  ).filter(Artist.name.ilike('%' + request.form.get('search_term', '') + '%'))
+  ).filter(
+    db.func.concat(Artist.name, ' ', Artist.city, ', ', Artist.state_id).ilike(
+      '%' + request.form.get('search_term', '') + '%'
+    )
+  )
+  #).filter(Artist.name.ilike('%' + request.form.get('search_term', '') + '%'))
 
   response = {'count': artists.count(), 'data': artists}
 
@@ -311,7 +323,7 @@ def edit_artist_submission(artist_id):
            db.session.close()
    else:
        flash('Check your data!')
-  return redirect(url_for('show_artist', artist_id=artist_id))
+   return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
